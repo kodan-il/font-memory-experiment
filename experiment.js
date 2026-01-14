@@ -66,10 +66,12 @@ function normalizeGenre(s) {
 }
 
 const genreInput = {
-  type: jsPsychSurveyText,
-  questions: [
-    { prompt: "Type one word: comedy, adventure, or thriller", required: true }
-  ],
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+      <h3>Section selection</h3>
+      <p>Choose the genre based on the word given by the researcher.</p>
+      `,
+  choices: ["comedy", "adventure", "thriller"],
   on_finish: (data) => {
     const genre = normalizeGenre(data.response.Q0);
 
