@@ -2,37 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Font Memory Experiment</title>
+    <title>Reading & Memory Experiment</title>
+
+    <script src="https://unpkg.com/jspsych@7.3.0"></script>
+
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-slider-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function"></script>
+
+    <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet" />
+
+    <!-- Strong “new page” feel: lock global scroll, allow internal scroll -->
     <style>
         html, body {
           height: 100%;
           margin: 0;
+          overflow: hidden;
         }
 
-        body {
-          overflow: hidden; /* ⛔ hentikan scroll global */
+        .jspsych-display-element {
+          height: 100vh;
+          overflow: hidden;
+        }
+
+        .jspsych-content {
+          max-height: none !important;
+          overflow: hidden !important;
         }
     </style>
 
-    <!-- jsPsych core -->
-    <script src="https://unpkg.com/jspsych@7.3.0"></script>
-
-    <!-- jsPsych plugins -->
-    <script src="https://unpkg.com/@jspsych/plugin-fullscreen"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-button-response"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-slider-response"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
-
-    <!-- jsPsych CSS -->
-    <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body></body>
 
 <script src="experiment.js"></script>
-
-</body>
 </html>
