@@ -1,0 +1,17 @@
+.fluent {
+  font-family: Arial, sans-serif;
+  color: black;
+  font-size: 20px;
+}
+
+.disfluent {
+  font-family: "Comic Sans MS", cursive;
+  color: #404040;
+  font-size: 18px;
+}
+
+.low-contrast {
+  font-family: Arial, sans-serif;
+  color: #d3d3d3;
+  font-size: 20px;
+}

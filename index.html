@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Font Memory Experiment</title>
+    <style>
+        html, body {
+          height: 100%;
+          margin: 0;
+        }
+
+        body {
+          overflow: hidden; /* ⛔ hentikan scroll global */
+        }
+    </style>
+
+    <!-- jsPsych core -->
+    <script src="https://unpkg.com/jspsych@7.3.0"></script>
+
+    <!-- jsPsych plugins -->
+    <script src="https://unpkg.com/@jspsych/plugin-fullscreen"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-slider-response"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
+
+    <!-- jsPsych CSS -->
+    <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script src="experiment.js"></script>
+
+</body>
+</html>
