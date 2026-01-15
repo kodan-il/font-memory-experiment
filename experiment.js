@@ -1,237 +1,228 @@
-/*************************************************
- * PERCEPTUAL DISFLUENCY EXPERIMENT (FINAL SAFE)
- * jsPsych 7.3.x | Between-subjects via user input
- *************************************************/
+/* =========================
+   INIT
+========================= */
 
 const jsPsych = initJsPsych({
   on_trial_start: function(){
     const content = document.querySelector('.jspsych-content');
-    if (content) {
-      content.innerHTML = '';
-    }
+    if (content) content.innerHTML = '';
     window.scrollTo(0, 0);
   }
 });
 
-/* ===============================
-   STIMULUS: AXOLOTL ONLY
-================================ */
+let fontStyle = {};
+let EXP = {
+  condition: "",
+  JOL_percent: null,
+  reading_rt: null,
+  quiz: {
+    questions: [],
+    correct_count: 0,
+    total_time_ms: 0,
+    mean_time_ms: 0,
+    actual_accuracy_percent: 0
+  }
+};
 
-const axolotlText = `
-The Axolotl is a paedomorphic salamander closely related to the tiger salamander.
+/* =========================
+   STIMULI
+========================= */
+
+const READING_TEXT = `
+The axolotl is a paedomorphic salamander closely related to the tiger salamander.
 Unlike other amphibians, axolotls reach adulthood without undergoing metamorphosis.
-Instead of taking to the land, adults remain aquatic and gilled.
-The species was originally found in several lakes underlying Mexico City, such as Lake Xochimilco.
-Axolotls are used extensively in scientific research due to their ability to regenerate limbs.
+Adults remain aquatic and retain their gills throughout life.
+The species was originally found in lakes underlying Mexico City.
+Axolotls are studied because of their ability to regenerate limbs.
 `;
 
-// 5 questions (same as you requested)
-const quizItems = [
-  { id: 1, q: "What type of animal is the axolotl?", options: ["Fish", "Salamander", "Reptile"], correctIndex: 1 },
-  { id: 2, q: "What process does it NOT undergo?", options: ["Metamorphosis", "Growth", "Digestion"], correctIndex: 0 },
-  { id: 3, q: "Where do adult axolotls remain?", options: ["On land", "In water", "In caves"], correctIndex: 1 },
-  { id: 4, q: "Where was the species originally found?", options: ["Mexico City lakes", "Brazil rivers", "Spain wetlands"], correctIndex: 0 },
-  { id: 5, q: "Why are axolotls used in scientific research?", options: ["They run fast", "They regenerate limbs", "They change color"], correctIndex: 1 }
+const QUIZ = [
+  { q: "Axolotls are:", choices: ["Fish", "Salamanders", "Reptiles"], correct: 1 },
+  { q: "They remain:", choices: ["On land", "Aquatic", "In caves"], correct: 1 },
+  { q: "Axolotls keep their:", choices: ["Lungs", "Gills", "Fur"], correct: 1 },
+  { q: "They originate from:", choices: ["Africa", "Mexico City lakes", "Asia"], correct: 1 },
+  { q: "They are studied because:", choices: ["Speed", "Color", "Limb regeneration"], correct: 2 }
 ];
 
-/* ===============================
-   CONSENT / NDA
-================================ */
+/* =========================
+   CONSENT
+========================= */
 
 const consent = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <h3>Consent & Data Notice</h3>
-    <p>This study investigates reading and memory.</p>
-    <p>Your interactions (responses and timing) will be recorded by the system.</p>
-    <p>No personally identifying information (e.g., name, age) is requested.</p>
-    <p>Participation is voluntary, and you may stop at any time by closing the browser tab.</p>
+    <div class="page">
+      <h2>Consent</h2>
+      <p>This study records reading behavior and response times.</p>
+      <p>No personal data is collected.</p>
+    </div>
   `,
   choices: ["I Agree", "I Do Not Agree"],
-  on_finish: (data) => {
-    // response is index of clicked button: 0 or 1
-    if (data.response === 1) {
-      jsPsych.endExperiment("You did not consent to participate. Thank you.");
-    }
+  on_finish: d => {
+    if (d.response === 1) jsPsych.endExperiment("Consent not given.");
   }
 };
 
-/* ===============================
-   CONDITION INPUT (comedy/adventure/thriller)
-   + assign reading style
-================================ */
+/* =========================
+   CONDITION
+========================= */
 
-function normalizeGenre(s) {
-  return String(s || "").toLowerCase().trim();
-}
-
-const genreInput = {
+const condition_input = {
   type: jsPsychHtmlButtonResponse,
-  stimulus: `
-      <h3>Section selection</h3>
-      <p>Choose the genre based on the word given by the researcher.</p>
-      `,
+  stimulus: `<div class="page"><p>Please choose a genre.</p></div>`,
   choices: ["comedy", "adventure", "thriller"],
-  on_finish: (data) => {
-    const genre = normalizeGenre(data.response.Q0);
+  on_finish: d => {
+    const c = ["comedy","adventure","thriller"][d.response];
+    EXP.condition = c;
 
-    // map to condition label + CSS
-    let condition = "";
-    let style = "";
-
-    if (genre === "comedy") {
-      condition = "fluent_easy";
-      style = "font-family: Arial, sans-serif; font-size: 22px; color: #000000; line-height: 1.6;";
-    } else if (genre === "adventure") {
-      condition = "low_contrast_small";
-      style = "font-family: Arial, sans-serif; font-size: 16px; color: #c8c8c8; line-height: 1.6;";
-    } else if (genre === "thriller") {
-      condition = "disfluent_font";
-      // Brush Script MT if available; fallback cursive
-      style = "font-family: 'Brush Script MT', cursive; font-size: 20px; color: #000000; line-height: 1.6;";
-    } else {
-      // fallback: treat unknown input as comedy to avoid breaking the experiment
-      condition = "fluent_easy";
-      style = "font-family: Arial, sans-serif; font-size: 22px; color: #000000; line-height: 1.6;";
-    }
-
-    jsPsych.data.addProperties({
-      genre_input: genre,
-      condition: condition,
-      reading_style: style
-    });
+    if (c === "comedy")
+      fontStyle = {font:"Arial", color:"#000", size:"20px"};
+    else if (c === "adventure")
+      fontStyle = {font:"Arial", color:"#bbb", size:"16px"};
+    else
+      fontStyle = {font:"Brush Script MT, cursive", color:"#444", size:"22px"};
   }
 };
 
-/* ===============================
-   COUNTDOWN 3-2-1
-================================ */
-
-const countdown = {
-  timeline: [
-    { type: jsPsychHtmlKeyboardResponse, stimulus: "<h1 style='font-size:80px;'>3</h1>", choices: "NO_KEYS", trial_duration: 1000 },
-    { type: jsPsychHtmlKeyboardResponse, stimulus: "<h1 style='font-size:80px;'>2</h1>", choices: "NO_KEYS", trial_duration: 1000 },
-    { type: jsPsychHtmlKeyboardResponse, stimulus: "<h1 style='font-size:80px;'>1</h1>", choices: "NO_KEYS", trial_duration: 1000 }
-  ],
-  on_finish: (data) => {}
-};
-
-/* ===============================
-   READING (styled by condition)
-================================ */
+/* =========================
+   READING
+========================= */
 
 const reading = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: () => {
-    const style = jsPsych.data.get().last(1).values()[0].reading_style || "";
-    return `<div style="${style}">${axolotlText}</div>`;
-  },
-  choices: ["I have finished reading"],
-  data: { phase: "reading" },
-  on_finish: (data) => {}
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: () => `
+    <div class="page" style="
+      font-family:${fontStyle.font};
+      color:${fontStyle.color};
+      font-size:${fontStyle.size};
+      line-height:1.6;">
+      <p>${READING_TEXT}</p>
+      <p><em>Press SPACE when finished reading.</em></p>
+    </div>
+  `,
+  choices: [" "],
+  data: { phase: "reading", stimulus: "reading passage" },
+  on_finish: d => {
+    EXP.reading_rt = d.rt;
+  }
 };
 
-/* ===============================
+/* =========================
    JOL
-================================ */
+========================= */
 
 const jol = {
   type: jsPsychHtmlSliderResponse,
-  stimulus: "How much do you think you will remember from the text?",
+  stimulus: `<div class="page"><p>How much do you think you will remember?</p></div>`,
+  min: 0,
+  max: 100,
+  step: 1,
   labels: ["0%", "50%", "100%"],
-  require_movement: true,
-  data: { phase: "JOL" }
-};
-
-/* ===============================
-   DISTRACTOR
-================================ */
-
-const distractor = {
-  type: jsPsychSurveyText,
-  questions: [{ prompt: "Solve: 23 + 19", required: true }],
-  data: { phase: "distractor" }
-};
-
-/* ===============================
-   QUIZ: 1 question per trial (RT per question)
-   + correctness per question
-================================ */
-
-const quizTrials = quizItems.map(item => {
-  return {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `<p><strong>Question ${item.id} of ${quizItems.length}</strong></p><p>${item.q}</p>`,
-    choices: item.options,
-    data: {
-      phase: "quiz",
-      question_id: item.id,
-      correct_index: item.correctIndex
-    },
-    on_finish: (data) => {
-      data.correct = (data.response === data.correct_index);
-    }
-  };
-});
-
-/* ===============================
-   SUMMARY COMPUTATION:
-   total correct + total/mean RT for quiz
-================================ */
-
-const computeSummary = {
-  type: jsPsychCallFunction,
-  func: () => {
-    const quizData = jsPsych.data.get().filter({ phase: "quiz" }).values();
-
-    // Score total
-    const nCorrect = quizData.reduce((acc, t) => acc + (t.correct ? 1 : 0), 0);
-    const nQ = quizData.length;
-
-    // RT stats (ms)
-    const rts = quizData.map(t => t.rt).filter(rt => rt !== null && !isNaN(rt));
-    const totalRT = rts.reduce((a, b) => a + b, 0);
-    const meanRT = rts.length ? (totalRT / rts.length) : null;
-
-    jsPsych.data.addProperties({
-      quiz_n_questions: nQ,
-      quiz_total_correct: nCorrect,
-      quiz_total_time_ms: totalRT,
-      quiz_mean_time_ms: meanRT
-    });
+  on_finish: d => {
+    EXP.JOL_percent = d.response;
   }
 };
 
-/* ===============================
-   FINISH: download CSV (no data shown on page)
-================================ */
+/* =========================
+   QUIZ
+========================= */
 
-const finishAndSave = {
+const quiz_trials = QUIZ.map((item, index) => ({
   type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <h3>Thank you for participating.</h3>
-    <p>Click <strong>Finish</strong> to complete the study.</p>
-    <p>Your browser will download a data file.</p>
+    <div class="page">
+      <h3>Question ${index + 1} of ${QUIZ.length}</h3>
+      <p>${item.q}</p>
+    </div>
+  `,
+  choices: item.choices,
+  data: { phase: "quiz", stimulus: item.q },
+  on_finish: d => {
+    const correct = d.response === item.correct ? 1 : 0;
+
+    EXP.quiz.questions.push({
+      stimulus: item.q,
+      response: item.choices[d.response],
+      quiz_score: correct,
+      rt: d.rt
+    });
+
+    if (correct) EXP.quiz.correct_count++;
+  }
+}));
+
+/* =========================
+   FINISH + EXPORT
+========================= */
+
+const finish = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <div class="page">
+      <h2>Thank you</h2>
+      <p>Click Finish to download your data.</p>
+    </div>
   `,
   choices: ["Finish"],
   on_finish: () => {
-    // Save CSV locally (participant downloads)
-    jsPsych.data.get().localSave('csv', `participant_${Date.now()}.csv`);
+
+    // quiz timing
+    const total = EXP.quiz.questions.reduce((a,b) => a + b.rt, 0);
+    EXP.quiz.total_time_ms = total;
+    EXP.quiz.mean_time_ms = total / EXP.quiz.questions.length;
+
+    // accuracy
+    EXP.quiz.actual_accuracy_percent =
+      (EXP.quiz.correct_count / EXP.quiz.questions.length) * 100;
+
+    // CSV rows
+    const rows = [
+      {
+        rt: EXP.reading_rt,
+        stimulus: "reading passage",
+        response: "SPACE",
+        quiz_score: "",
+        condition: EXP.condition,
+        JOL_percent: EXP.JOL_percent,
+        quiz_total_time_ms: "",
+        quiz_mean_time_ms: "",
+        actual_accuracy_percent: ""
+      },
+      ...EXP.quiz.questions.map(q => ({
+        rt: q.rt,
+        stimulus: q.stimulus,
+        response: q.response,
+        quiz_score: q.quiz_score,
+        condition: EXP.condition,
+        JOL_percent: EXP.JOL_percent,
+        quiz_total_time_ms: EXP.quiz.total_time_ms,
+        quiz_mean_time_ms: EXP.quiz.mean_time_ms,
+        actual_accuracy_percent: EXP.quiz.actual_accuracy_percent
+      }))
+    ];
+
+    const csv = [
+      Object.keys(rows[0]).join(","),
+      ...rows.map(r => Object.values(r).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "experiment_data.csv";
+    a.click();
   }
 };
 
-/* ===============================
-   RUN TIMELINE
-================================ */
+/* =========================
+   RUN
+========================= */
 
 jsPsych.run([
   consent,
-  genreInput,
-  countdown,
+  condition_input,
   reading,
   jol,
-  distractor,
-  ...quizTrials,
-  computeSummary,
-  finishAndSave
+  ...quiz_trials,
+  finish
 ]);
