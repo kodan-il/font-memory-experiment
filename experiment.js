@@ -53,14 +53,17 @@ const consent = {
   preamble: `
     <div class="page">
       <h2>Consent</h2>
-      <p>This study records reading behavior and response times.</p>
-      <p>No personal data is collected.</p>
+      <p>Thank you for participating in this Human Factors research study. The purpose of this study is to investigate how perceptual effort during reading affects memory performance and metacognitive judgments. Reading effort is manipulated through different font designs that vary in visual fluency and legibility.</p>
+      <p>Your participation in this study is completely voluntary. During the study, you will be asked to read a short passage, rate your confidence in remembering the information, and complete a short quiz related to the passage. The study will take approximately 10 to 15 minutes to complete.</p>
+      <p>This study involves no known risks beyond those encountered in normal computer use. You may stop participating at any time without any penalty or negative consequences.</p>
+      <p>No personal or identifying information (such as name, age, or IP address) will be collected. The data recorded will only include task-related information, such as the time spent reading the passage and responding to the quiz questions. All data will be stored anonymously and used solely for research purposes.</p>
+      <p>By clicking “I Agree,” you confirm that you have read and understood the information above and voluntarily agree to participate in this study.</p>
     </div>
   `,
   html: `
     <div style="text-align: left; display: inline-block;">
-      <p>Please enter a unique ID to proceed. <strong>This is required.</strong></p>
-      <input name="p_id" type="text" required placeholder="Enter your ID here..." />
+      <p>Please enter a combination of your favorite colour and favorite animal. <strong>This is required.</strong></p>
+      <input name="p_id" type="text" required placeholder="RedDog" />
       <br><br>
       <label>
         <input type="checkbox" name="consent_checkbox" required />
