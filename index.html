@@ -3,18 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Reading & Memory Experiment</title>
-
+    
     <script src="https://unpkg.com/jspsych@7.3.0"></script>
-
     <script src="https://unpkg.com/@jspsych/plugin-html-button-response"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-slider-response"></script>
     <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
     <script src="https://unpkg.com/@jspsych/plugin-call-function"></script>
-
+    <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@1.0.0"></script>
     <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet" />
 
-    <!-- Strong “new page” feel: lock global scroll, allow internal scroll -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK4vbbivf53Jx8xkdWbCUkZBWBFUvSJnw",
+            authDomain: "human-factors-14e0a.firebaseapp.com",
+            projectId: "human-factors-14e0a",
+            storageBucket: "human-factors-14e0a.firebasestorage.app",
+            messagingSenderId: "937870936457",
+            appId: "1:937870936457:web:1c924946e0b017c6def958",
+            measurementId: "G-S3GVCGCYFQ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Make these available globally for experiment.js
+        window.db = getFirestore(app);
+        window.auth = getAuth(app);
+        window.fbAddDoc = addDoc;
+        window.fbCollection = collection;
+        window.fbTimestamp = serverTimestamp;
+
+        // Sign in right away
+        signInAnonymously(window.auth).catch((error) => console.error("Auth Error:", error));
+    </script>
+
     <style>
         html, body {
           height: 100%;
@@ -34,7 +61,8 @@
     </style>
 
 </head>
-<body></body>
+<body>
+    </body>
 
 <script src="experiment.js"></script>
 </html>

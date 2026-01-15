@@ -49,17 +49,29 @@ const QUIZ = [
 ========================= */
 
 const consent = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: `
+  type: jsPsychSurveyHtmlForm,
+  preamble: `
     <div class="page">
       <h2>Consent</h2>
       <p>This study records reading behavior and response times.</p>
       <p>No personal data is collected.</p>
     </div>
   `,
-  choices: ["I Agree", "I Do Not Agree"],
-  on_finish: d => {
-    if (d.response === 1) jsPsych.endExperiment("Consent not given.");
+  html: `
+    <div style="text-align: left; display: inline-block;">
+      <p>Please enter a unique ID to proceed. <strong>This is required.</strong></p>
+      <input name="p_id" type="text" required placeholder="Enter your ID here..." />
+      <br><br>
+      <label>
+        <input type="checkbox" name="consent_checkbox" required />
+        I agree to the terms of this study.
+      </label>
+    </div>
+  `,
+  button_label: "Start Experiment",
+  on_finish: function(data) {
+    // We strictly map the form response to your EXP object
+    EXP.participant_id = data.response.p_id;
   }
 };
 
@@ -152,65 +164,60 @@ const quiz_trials = QUIZ.map((item, index) => ({
 }));
 
 /* =========================
-   FINISH + EXPORT
+   FINISH + EXPORT (FIRESTORE)
 ========================= */
 
 const finish = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div class="page">
-      <h2>Thank you</h2>
-      <p>Click Finish to download your data.</p>
+      <h2>Vielen Dank!</h2>
+      <p>Click "Finish" to save your data to the database.</p>
     </div>
   `,
   choices: ["Finish"],
-  on_finish: () => {
-
-    // quiz timing
-    const total = EXP.quiz.questions.reduce((a,b) => a + b.rt, 0);
+  on_finish: async () => {
+    // 1. Calculate stats (same as your original code)
+    const total = EXP.quiz.questions.reduce((a, b) => a + b.rt, 0);
     EXP.quiz.total_time_ms = total;
     EXP.quiz.mean_time_ms = total / EXP.quiz.questions.length;
+    EXP.quiz.actual_accuracy_percent = (EXP.quiz.correct_count / EXP.quiz.questions.length) * 100;
 
-    // accuracy
-    EXP.quiz.actual_accuracy_percent =
-      (EXP.quiz.correct_count / EXP.quiz.questions.length) * 100;
-
-    // CSV rows
-    const rows = [
-      {
-        rt: EXP.reading_rt,
-        stimulus: "reading passage",
-        response: "SPACE",
-        quiz_score: "",
+    // 2. Prepare the data object
+    const finalData = {
+        participant_id: EXP.participant_id,
+        timestamp: new Date().toISOString(),
         condition: EXP.condition,
-        JOL_percent: EXP.JOL_percent,
-        quiz_total_time_ms: "",
-        quiz_mean_time_ms: "",
-        actual_accuracy_percent: ""
-      },
-      ...EXP.quiz.questions.map(q => ({
-        rt: q.rt,
-        stimulus: q.stimulus,
-        response: q.response,
-        quiz_score: q.quiz_score,
-        condition: EXP.condition,
-        JOL_percent: EXP.JOL_percent,
-        quiz_total_time_ms: EXP.quiz.total_time_ms,
-        quiz_mean_time_ms: EXP.quiz.mean_time_ms,
-        actual_accuracy_percent: EXP.quiz.actual_accuracy_percent
-      }))
-    ];
+        jol_percent: EXP.JOL_percent,
+        quiz_accuracy: EXP.quiz.actual_accuracy_percent,
+        full_data: EXP // Saves the whole structure
+    };
 
-    const csv = [
-      Object.keys(rows[0]).join(","),
-      ...rows.map(r => Object.values(r).join(","))
-    ].join("\n");
+    // 3. Save to Firestore using the global window variables
+    const content = document.querySelector('.jspsych-content');
+    content.innerHTML = '<p>Saving data... please wait.</p>';
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "experiment_data.csv";
-    a.click();
+    try {
+        // We use window.fbAddDoc because you defined it in index.html
+        await window.fbAddDoc(window.fbCollection(window.db, "experiment_results"), finalData);
+        
+        console.log("Data saved to Firestore!");
+        content.innerHTML = `
+            <div class="page">
+                <h2 style="color:green">Success!</h2>
+                <p>Ihre Daten wurden gespeichert. (Your data has been saved.)</p>
+                <p>You can now close this tab.</p>
+            </div>`;
+            
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        content.innerHTML = `
+            <div class="page">
+                <h2 style="color:red">Error</h2>
+                <p>Es gab einen Fehler beim Speichern. (There was an error saving.)</p>
+                <p>Please contact the researcher.</p>
+            </div>`;
+    }
   }
 };
 
