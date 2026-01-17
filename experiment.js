@@ -104,7 +104,7 @@ const condition_input = {
 ========================= */
 
 const reading = {
-  type: jsPsychHtmlKeyboardResponse,
+  type: jsPsychHtmlButtonResponse,
   stimulus: () => `
     <div class="page" style="
       font-family:${fontStyle.font};
@@ -112,10 +112,10 @@ const reading = {
       font-size:${fontStyle.size};
       line-height:1.6;">
       <p>${READING_TEXT}</p>
-      <p><em>Press SPACE when finished reading.</em></p>
+      <p><em>Press the continue button when you finished reading.</em></p>
     </div>
   `,
-  choices: [" "],
+  choices: ["Continue"],
   data: { phase: "reading", stimulus: "reading passage" },
   on_finish: d => {
     EXP.reading_rt = d.rt;
